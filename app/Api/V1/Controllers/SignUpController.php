@@ -14,11 +14,14 @@ class SignUpController extends Controller
     public function signUp(SignUpRequest $request, JWTAuth $JWTAuth)
     {
         $user = new User($request->all());
-        if(!$user->save()) {
+        if(User::all()->count() == 0){
+          $user->is_superadmin = true;
+        }
+        if (!$user->save()) {
             throw new HttpException(500);
         }
 
-        if(!Config::get('boilerplate.sign_up.release_token')) {
+        if (!Config::get('boilerplate.sign_up.release_token')) {
             return response()->json([
                 'status' => 'ok'
             ], 201);
