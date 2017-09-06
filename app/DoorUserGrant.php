@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DoorUserGrant extends Model
 {
+    protected $fillable = ['door', 'door_user', 'grants'];
     public function door(){
       return $this->belongsTo('App\Door', 'door');
     }

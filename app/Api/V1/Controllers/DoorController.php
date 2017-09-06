@@ -23,7 +23,7 @@ class DoorController extends Controller
         if ($currentUser->is_superadmin) {
             return Door::all();
         }
-        //otherwise give data of managed doors 
+        //otherwise give data of managed doors
         $managedDoors = Manager::where('user', $currentUser->id)->get();
         $arrDoors = [];
         foreach($managedDoors as $managedDoor){
@@ -31,20 +31,18 @@ class DoorController extends Controller
         }
         return $arrDoors;
     }
-    public function grants(){
-        $payload = JWTAuth::parseToken()->getPayload();
-        return DoorUserGrant::where('door', '=', $payload['door'])->get();
+    public function show($id){
+      return Door::findOrFail($id);
     }
-    public function storeUser(Request $request){
 
-    }
     public function store(Request $request)
     {
         $currentUser = JWTAuth::parseToken()->authenticate();
+        if(!$currentUser->is_superadmin){
+          return ['error' => 'only superadmin can do this.'];
+        }
 
         $door = Door::create($request->all());
-
-        $door->save();
 
         $customClaims = ['door' => $door->id];
 
@@ -55,5 +53,12 @@ class DoorController extends Controller
         $door->save();
 
         return $door;
+    }
+
+    public function update(Request $request, $id){
+      return ['saved' => Door::findOrFail($id)->update($request->all())];
+    }
+    public function destroy(Request $request, $id){
+      return ['removed' => Door::findOrFail($id)->delete()];
     }
 }

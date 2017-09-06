@@ -1,6 +1,7 @@
 <?php
 
 use Dingo\Api\Routing\Router;
+use JWTAuth;
 
 /** @var Router $api */
 $api = app(Router::class);
@@ -15,17 +16,13 @@ $api->version('v1', function (Router $api) {
     });
 
     $api->group(['middleware' => 'jwt.auth'], function (Router $api) {
-        $payload = JWTAuth::parseToken()->getPayload();
-        if (isset($payload['door'])) {
-            $api->get('grants', 'App\\Api\\V1\\Controllers\\DoorController@grants');
-        } else {
-            $api->get('protected', function () {
-                return response()->json([
+        $api->get('protected', function () {
+            return response()->json([
                 'message' => 'Access to protected resources granted! You are seeing this text as you provided the token correctly.'
             ]);
-            });
+        });
 
-            $api->get('refresh', [
+        $api->get('refresh', [
             'middleware' => 'jwt.refresh',
             function () {
                 return response()->json([
@@ -34,9 +31,24 @@ $api->version('v1', function (Router $api) {
             }
         ]);
 
-            $api->post('door/store', 'App\\Api\\V1\\Controllers\\DoorController@store');
-            $api->get('door', 'App\\Api\\V1\\Controllers\\DoorController@index');
-        }
+        $api->resource('doors', 'App\\Api\\V1\\Controllers\\DoorController');
+        $api->resource('door-users', 'App\\Api\\V1\\Controllers\\DoorUserController');
+        $api->resource('door-user-grants', 'App\\Api\\V1\\Controllers\\DoorUserGrantController');
+        $api->resource('logs', 'App\\Api\\V1\\Controllers\\LogController');
+        $api->resource('managers', 'App\\Api\\V1\\Controllers\\ManagerController');
+
+        /*
+        $api->post('doors/createDoor', 'App\\Api\\V1\\Controllers\\DoorController@storeDoor');
+        $api->post('doors/createManager', 'App\\Api\\V1\\Controllers\\DoorController@storeManager');
+        $api->post('doors/createUser', 'App\\Api\\V1\\Controllers\\DoorController@storeUser');
+        $api->post('doors/createGrant', 'App\\Api\\V1\\Controllers\\DoorController@storeGrant');
+
+        $api->get('doors', 'App\\Api\\V1\\Controllers\\DoorController@index');
+        $api->get('door/manager', 'App\\Api\\V1\\Controllers\\DoorController@manager');
+        $api->get('door/user', 'App\\Api\\V1\\Controllers\\DoorController@manager');
+        $api->get('door/grants/{door}', 'App\\Api\\V1\\Controllers\\DoorController@grants');
+        */
+
     });
 
     $api->get('hello', function () {
